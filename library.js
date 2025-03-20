@@ -5,7 +5,41 @@ const table = document.createElement("table");
 const header = table.createTHead();
 const rowHeader = header.insertRow();
 
-const headers = ["Title", "Author", "Pages", "Read"];
+const form = document.getElementById("bookForm");
+const newBookBtn = document.getElementById("newBookBtn");
+const titleInput = document.getElementById("title");
+const authorInput = document.getElementById("author");
+const pagesInput = document.getElementById("pages");
+const readInput = document.getElementById("read");
+
+const formContainer = document.getElementById("bookFormContainer");
+
+newBookBtn.addEventListener("click", () => {
+  formContainer.classList.toggle("show");
+});
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const title = titleInput.value;
+  const author = authorInput.value;
+  const pages = pagesInput.value;
+  const read = readInput.checked;
+
+  if (title && author && pages) {
+    addBookToLibrary(title, author, pages, read);
+    displayLibrary();
+
+    setTimeout(() => {
+      formContainer.classList.remove("show");
+    }, 200);
+    form.reset();
+  } else {
+    alert("Please fill in all the fields");
+  }
+});
+
+const headers = ["Title", "Author", "Pages", "Read", ""];
 headers.forEach((text) => {
   const cellHeader = document.createElement("th");
   cellHeader.textContent = text;
@@ -55,20 +89,41 @@ function displayLibrary() {
         cell.textContent = book[key];
       }
     });
-    const checkboxCell = row.insertCell();
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = book.read;
-    checkboxCell.appendChild(checkbox);
+
+    const statusCell = row.insertCell();
+    const statusSpan = document.createElement("span");
+
+    if (book.read) {
+      statusSpan.textContent = "Read";
+      statusSpan.style.backgroundColor = "#d4f8d4";
+      statusSpan.style.color = "#007500";
+    } else {
+      statusSpan.textContent = "Unread";
+      statusSpan.style.backgroundColor = "#f8d4d4";
+      statusSpan.style.color = "#750000";
+    }
+
+    statusSpan.style.padding = "5px 15px";
+    statusSpan.style.borderRadius = "8px";
+    statusSpan.style.display = "inline-block";
+    statusSpan.style.fontWeight = "500";
+    statusSpan.style.cursor = "pointer";
+
+    statusCell.appendChild(statusSpan);
+
+    statusSpan.addEventListener("click", () => {
+      const bookIndex = myLibrary.findIndex((b) => b.id === book.id);
+      if (bookIndex !== -1) {
+        myLibrary[bookIndex].read = !myLibrary[bookIndex].read;
+      }
+      displayLibrary();
+    });
+
     const btnCell = row.insertCell();
     const button = document.createElement("button");
     button.textContent = "Remove";
     btnCell.appendChild(button);
 
-    checkbox.addEventListener("click", () => {
-      book.toggleReadStatus();
-      displayLibrary();
-    });
     button.addEventListener("click", () => {
       removeBook(book.id);
     });
